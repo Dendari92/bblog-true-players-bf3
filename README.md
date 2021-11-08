@@ -2,7 +2,7 @@
 A very simple Better Battlelog plugin for Battlefield 3 which shows the real players count for a server.
 
 # How to Install
-1. Have Better Battlelog browser plugin installed and active (you can find it here: https://getbblog.com);
+1. Have Better Battlelog browser plugin installed and active (you can find it here: https://getbblog.com, Firefox users try [this how-to install](https://github.com/brainfoolong/better-battlelog#how-to-install-on-firefox));
 2. Go to Battlefield 3 Battlelog webpage (https://battlelog.battlefield.com/bf3);
 3. On the left you should see a "Better Battlelog" sidebutton:
 
