@@ -22,8 +22,8 @@ A very simple Better Battlelog plugin for Battlefield 3 which shows the real pla
      ![image](https://user-images.githubusercontent.com/8669503/140805431-b93526dc-81cd-4222-ac56-a29375e6ba65.png)
 
      ![image](https://user-images.githubusercontent.com/8669503/140805613-9afc4dae-6a63-493b-b5cb-ceaf1f5a402f.png)
-
-     ![image](https://user-images.githubusercontent.com/8669503/140806466-4edd27f1-5d34-4b6a-b38b-e44e0fd703c4.png)
+     
+     ![image](https://user-images.githubusercontent.com/8669503/142509481-db93e0fd-4602-439a-bc8d-f679d240a30d.png)
 
    - If you want to see the code and play around with it you can copy and paste the code in the big textarea at the bottom of the pop-up window. You can find the plugin code here: https://github.com/Dendari92/bblog-true-players-bf3/blob/main/bblog-true-players-bf3.js
 
