@@ -7,6 +7,8 @@
  * # # # # # #
  * Version 1.2-beta
  * - Added filter to count only real playing players (can be toggled in the BBLog settings menu)
+ * - Added filter to not count specified players names (can be toggled and customized in the BBLog settings menu)
+ * - Added some comments in the code for better readability (the plugin is getting a little bit bigger...)
  * Version 1.1
  * - Code refactoring, made it a little bit simpler and little more robust;
  * - Changed the way players count is displayed in the server browser, by default it keeps the original ("fake") players count visible;
@@ -51,6 +53,9 @@ BBLog.handle("add.plugin", {
       "filter.real.playing.players": "Filter only real playing players",
       "filter.real.playing.players.tooltip":
         "Filter the real online and playing players count in the server browser. NOTE: players with status set to invisible will not count!",
+      "filter.players.names": "Filter players names",
+      "filter.players.names.tooltip":
+        "Insert the players names to ignore when counting players in a server. Seperate multiple names using a comma (','). Case sensitive.",
     },
   },
 
@@ -68,6 +73,13 @@ BBLog.handle("add.plugin", {
   configFlags: [
     { key: "only.real.players", init: 0 },
     { key: "filter.real.playing.players", init: 0 },
+    {
+      key: "filter.players.names",
+      init: 0,
+      handler: function (instance) {
+        instance.getPlayersNamesToFilter(instance);
+      },
+    },
   ],
 
   /**
@@ -99,48 +111,129 @@ BBLog.handle("add.plugin", {
       BBLog.cache("mode") === "bf3" &&
       BBLog.getCleanUrl().endsWith("/bf3/servers/")
     ) {
+      /*
+       * --- RETRIEVE SETTINGS FROM BBLOG STORAGE ---
+       */
+      // Battlelog API URL to retrieve players on a server
       var getPlayersOnServerUrl = instance.storage("getPlayersOnServerUrl");
+      // Toggle in BBLog settings to show only the "real" players count without keeping the "fake" one
       var onlyRealPlayers = instance.storage("only.real.players");
-      var onlyRealPlayingPlayers = instance.storage(
+      // Toggle in BBLog settings to filter "real" players who Battlelog see as playing
+      var filterRealPlayingPlayers = instance.storage(
         "filter.real.playing.players"
       );
+      // Toggle in BBLog settings to filter "real" players by names (e.g. servers using actual in-game bots)
+      var filterPlayersNames = instance.storage("filter.players.names");
+      // The string containing all players names to filter out, multiple names should be separated by a comma
+      var filteredPlayersNames = instance.storage("filteredPlayersNames");
+
+      /*
+       * This is the main function, it checks for all the rows in the servers
+       * browser and takes their GUID, unless it's been already done.
+       * The GUID is then used to call the Battlelog API for retrieving
+       * the actual players count.
+       * This already filter out all the "Unknown" players from the server
+       * so it should be enough for most case, but in case it isn't
+       * there are some extra filters provided in the plugin settings.
+       */
       $(".serverguide-bodycells:not(.bblog-true-players)").each(function () {
         var row = $(this);
         var guid = $(this).attr("guid");
         $.get(getPlayersOnServerUrl + guid, function (response) {
           var players;
-          /* It seems the Battlelog API used to show the real players is buggy
+          var playersCount;
+
+          /*
+           * Some servers use actual in-game bots players to fill their servers.
+           * These are still counted by the Battlelog API, with this option
+           * users can filter unwanted bots.
+           */
+          if (filterPlayersNames === 1 && filteredPlayersNames) {
+            var filteredPlayersNamesRegex = new RegExp(
+              filteredPlayersNames.join("|")
+            );
+            players = response.players.filter(
+              (player) =>
+                !player.persona.personaName.match(filteredPlayersNamesRegex) ||
+                !player.persona.user.username.match(filteredPlayersNamesRegex)
+            );
+          } else {
+            players = response.players;
+          }
+
+          /*
+           * It seems the Battlelog API used to show the real players is buggy
            * and show more players than there are, sometimes even more than the
            * maximum allowed in a server (e.g. 70+), as a workaround filter only
            * players which are "playing". Can be toggled in BBLog settings menu.
            * NOTE: players with status set to invisible won't count.
            */
-          if (onlyRealPlayingPlayers === 1) {
-            players = response.players.filter(
+          if (filterRealPlayingPlayers === 1) {
+            playersCount = players.filter(
               (player) => player.persona.user.presence.isPlaying
             ).length;
           } else {
-            players = response.players.length;
+            playersCount = players.length;
           }
+
+          // Either replace or add the "real" players count in the server's players cell
           if (!row.hasClass("bblog-true-players")) {
             row.find(".serverguide-cell-players").html(function () {
               if (onlyRealPlayers === 1) {
+                // replace everything before the slash ("/"). Expected result: *realPlayers* / *maxPlayers*
                 return $(this)
                   .html()
                   .replace(
                     /^.*(?=( \/ ))/m,
-                    "\n <span><b>[" + players + "]</b>"
-                  ); // replace everything before the slash ("/")
+                    "\n <span><b>[" + playersCount + "]</b>"
+                  );
               } else {
+                // replace just the slash ("/"). Expected result: *fakePlayers* [*realPlayers*] / *maxPlayers*
                 return $(this)
                   .html()
-                  .replace(/ \/ /, " <b>[" + players + "]</b> / "); // replace just the slash ("/")
+                  .replace(/ \/ /, " <b>[" + playersCount + "]</b> / ");
               }
             });
+
+            // Add this CSS class to mark row as done
             row.addClass("bblog-true-players");
           }
         });
       });
+    }
+  },
+
+  /**
+   * This function allows the users to input the players names they want to filter out from the main function.
+   * The input should be a string, in case of multiple names they should be separated by a comma.
+   * It is the converted to an array which is saved into BBLog storage.
+   * To retrieve the array use '**instance.storage("filteredPlayersNames")**'.
+   * Users can clean the saved players names by inserting an empty input.
+   * Notice the "instance" parameter, you should always pass the instance to any own function
+   *
+   * @param object instance The instance of your plugin which is the whole plugin object
+   *    Always use "instance" to access any plugin related function, not use "this" because it's not working properly
+   *    For example: If you add a new function to your addon, always pass the "instance" object
+   */
+  getPlayersNamesToFilter: function (instance) {
+    var filteredPlayersNames = instance.storage("filteredPlayersNames");
+
+    var playersNamesString;
+    if (filteredPlayersNames) {
+      playersNamesString = prompt(
+        instance.t("filter.players.names.tooltip"),
+        filteredPlayersNames
+      );
+    } else {
+      playersNamesString = prompt(instance.t("filter.players.names.tooltip"));
+    }
+
+    if (playersNamesString) {
+      var playersNames = playersNamesString.split(",");
+
+      instance.storage("filteredPlayersNames", playersNames);
+    } else {
+      instance.storage("filteredPlayersNames", "");
     }
   },
 });
