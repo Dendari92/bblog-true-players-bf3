@@ -28,8 +28,22 @@ A very simple Better Battlelog plugin for Battlefield 3 which shows the real pla
    - If you want to see the code and play around with it you can copy and paste the code in the big textarea at the bottom of the pop-up window. You can find the plugin code here: https://github.com/Dendari92/bblog-true-players-bf3/blob/main/bblog-true-players-bf3.js
 
 # Known Issues and Limitations
-Currently the biggest limitation is that sorting by real players count isn't possible, so you might see empty servers at the top when sorting by players.
+## Too many "real" players
+Sometimes the plugin will show more "real" players than are actually possible (e.g. 70/64). With version 1.2 a toggle has been added in the BBLog settings meny to count only playing "real" players.
 
+![image](https://user-images.githubusercontent.com/8669503/162817785-5f847574-7853-44e0-b0bd-bb08bc7f6d2c.png)
+
+## Filter fake accounts inside a server
+Some servers use in-game bot to boost their numbers. With version 1.2 it's possible to filter players names (e.g. the bots names).
+
+![image](https://user-images.githubusercontent.com/8669503/163254460-717ce8a5-7db9-49dc-bf2d-982221c9ed16.png)
+
+![image](https://user-images.githubusercontent.com/8669503/163254568-1adf8cd0-aa4f-4acd-b01a-fe9ec1f36337.png)
+
+## Sort by "real" players count
+Sorting by real players count isn't possible, so you might see empty servers at the top when sorting by players.
+
+## More fancy way of showing the "real" players count
 The way the plugin shows real players it's kinda ugly, just wanted something (mostly) functional.
 
 # Special Thanks
