@@ -36,6 +36,8 @@ Sometimes the plugin will show more "real" players than are actually possible (e
 ## Filter fake accounts inside a server
 Some servers use in-game bot to boost their numbers. With version 1.2 it's possible to filter players names (e.g. the bots names).
 
+NOTE: it is possible to use [regular expressions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions)!
+
 ![image](https://user-images.githubusercontent.com/8669503/163254460-717ce8a5-7db9-49dc-bf2d-982221c9ed16.png)
 
 ![image](https://user-images.githubusercontent.com/8669503/163254568-1adf8cd0-aa4f-4acd-b01a-fe9ec1f36337.png)
